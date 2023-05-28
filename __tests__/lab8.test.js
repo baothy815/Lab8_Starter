@@ -55,7 +55,7 @@ describe('Basic user flow for Website', () => {
     // TODO - Step 2
     // Query a <product-item> element using puppeteer ( checkout page.$() and page.$$() in the docs )
 
-    const productItems = await page.$('product-item');
+    const productItems = await page.$$("product-item");
     // Grab the shadowRoot of that element (it's a property), then query a button from that shadowRoot.
     const shadowRoot = await productItems.getProperty('shadowRoot');
     const srButton = await shadowRoot.$('Button');
@@ -75,13 +75,18 @@ describe('Basic user flow for Website', () => {
     // Query select all of the <product-item> elements, then for every single product element
     const productItems = await page.$$("product-item");
     // get the shadowRoot and query select the button inside, and click on it.
-    for (var i = 0; i < productItems.length; i++){
+    for (var i = 1; i < productItems.length; i++){
       const shadowRoot = await productItems[i].getProperty('shadowRoot');
       const button = await shadowRoot.$("button");
       await button.click();
-    }
-    // Check to see if the innerText of #cart-count is 20
 
+
+      
+    }
+
+    
+
+    // Check to see if the innerText of #cart-count is 20
       const cartCount = await page.$('#cart-count');
       const innerTextCartCount = await cartCount.getProperty('innerText');
       const cartCountValue = await innerTextCartCount.jsonValue();
@@ -94,7 +99,22 @@ describe('Basic user flow for Website', () => {
     // TODO - Step 4
     // Reload the page, then select all of the <product-item> elements, and check every
     // element to make sure that all of their buttons say "Remove from Cart".
-    // Also check to make sure that #cart-count is still 20
+    await page.reload();
+    const productItems = await page.$$("product-item");
+    for(let i = 0; i < productItems.length; i++){
+      const shadowRoot = await productItems[i].getProperty('shadowRoot');
+      const srButton = await shadowRoot.$('Button');
+      const innerTextButton = await srButton.getProperty('innerText');
+      const innerTextValue = await innerTextButton.jsonValue();
+      expect(innerTextValue).toBe("Remove from Cart");
+
+    }
+     // Also check to make sure that #cart-count is still 20
+     const cartCount = await page.$('#cart-count');
+     const innerTextCartCount = await cartCount.getProperty('innerText');
+     const cartCountValue = await innerTextCartCount.jsonValue();
+     expect(cartCountValue).toBe('20');
+
   }, 10000);
 
   // Check to make sure that the cart in localStorage is what you expect
@@ -102,6 +122,14 @@ describe('Basic user flow for Website', () => {
     // TODO - Step 5
     // At this point he item 'cart' in localStorage should be 
     // '[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]', check to make sure it is
+    const cartCount = await page.evaluate(() => {
+        return localStorage.getItem('cart');
+
+    });
+
+    expect(cartCount).toBe('[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]')
+
+  
   });
 
   // Checking to make sure that if you remove all of the items from the cart that the cart
